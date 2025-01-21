@@ -1,0 +1,101 @@
+﻿<UserControl x:Class="PrismDatabaseApp.Views.AlarmBarView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PrismDatabaseApp.Views"
+             mc:Ignorable="d"  
+             Background="#1A1A1A"
+             d:DesignHeight="450" 
+             d:DesignWidth="800">
+    <UserControl.Resources>
+        <!-- ScrollBar 스타일 -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid>
+                            <Track Name="PART_Track"
+                                   Value="{TemplateBinding Value}"
+                                   Maximum="{TemplateBinding Maximum}"
+                                   Minimum="{TemplateBinding Minimum}"
+                                   ViewportSize="{TemplateBinding ViewportSize}">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Visibility="Collapsed" />
+                                </Track.DecreaseRepeatButton>
+                                <!-- 움직이는 작은 바 (Thumb) -->
+                                <Track.Thumb>
+                                    <Thumb Background="White" BorderBrush="Gray" BorderThickness="1" />
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Visibility="Collapsed" />
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- 알림 -->
+        <Border Background="#1A1A1A" CornerRadius="5" Padding="10">
+            <Grid>
+                <!-- 제목 -->
+                <TextBlock Text="Notifications" FontSize="20" Foreground="White" Margin="10" VerticalAlignment="Top" />
+
+                <!-- 알람 리스트 -->
+                <ListView ItemsSource="{Binding Alarms}"
+                          Margin="10,40,10,10" 
+                          Background="White"
+                          MaxHeight="300"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          HorizontalContentAlignment="Stretch">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#2D2D2D" CornerRadius="5" Padding="5" Margin="5">
+                                <Grid Height="auto" Width="auto">
+                                    <!-- Column 정의 -->
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto" />
+                                        <!-- 메시지 -->
+                                        <ColumnDefinition Width="*" />
+                                        <!-- 공백 -->
+                                        <ColumnDefinition Width="auto" />
+                                        <!-- 상세 버튼 -->
+                                        <ColumnDefinition Width="auto" />
+                                        <!-- 삭제 버튼 -->
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 알람 메시지와 타임스탬프 -->
+                                    <StackPanel Orientation="Vertical" Grid.Column="0" Margin="5">
+                                        <TextBlock Text="{Binding Message}" VerticalAlignment="Center" Foreground="White" FontSize="16" />
+                                        <TextBlock Text="{Binding Timestamp}" VerticalAlignment="Center" Foreground="Orange" FontSize="12" />
+                                    </StackPanel>
+
+                                    <!-- 공백을 위한 Border -->
+                                    <Border Grid.Column="1" Background="Transparent" />
+                                    <!-- 디버깅용 배경 -->
+
+                                    <!-- 상세 버튼 -->
+                                    <!--<Button Content="상세"
+                                            Command="{Binding DataContext.SendDetailsCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                            CommandParameter="{Binding}"
+                                            Margin="5" Grid.Column="2" Width="60" Height="30" />-->
+
+                                    <!-- 삭제 버튼 -->
+                                    <Button Content="삭제"
+                                            Command="{Binding DataContext.DeleteAlarmCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                            CommandParameter="{Binding}"
+                                            Margin="5" Grid.Column="3" Width="60" Height="30" 
+                                            Background="#FF3B30" Foreground="White" BorderBrush="#FF3B30" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
