@@ -27,7 +27,7 @@ namespace PrismDatabaseApp.Services
         {
             // SQL 쿼리 생성
             StringBuilder query = new StringBuilder();
-            query.Append("SELECT [id], [Message], [Timestamp] ");
+            query.Append("SELECT [id], [Message], [Timestamp],[AlarmCode],[Value] ");
             query.Append("FROM [SlurryCoatingDB].[dbo].[Alarms] ");
             query.Append("WHERE CAST([Timestamp] AS DATE) BETWEEN @StartDate AND @EndDate ");
 

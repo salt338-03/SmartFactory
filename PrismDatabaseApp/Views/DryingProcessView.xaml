@@ -31,14 +31,6 @@
                     <RowDefinition Height="Auto" />
                     <!--메트릭-->
                 </Grid.RowDefinitions>
-
-                <!--그래프-->
-
-
-                <!--메트릭-->
-                <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,10,0,0">
-                    <TextBlock Text="{Binding CoatingSpeed, StringFormat='{}{0:F3} m/min'}" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
-                </StackPanel>
             </Grid>
 
             <!--두 번째 그래프와 메트릭-->

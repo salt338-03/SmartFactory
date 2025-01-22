@@ -9,33 +9,11 @@
              d:DesignHeight="450" 
              d:DesignWidth="800">
     <UserControl.Resources>
-        <!-- ScrollBar 스타일 -->
-        <Style TargetType="ScrollBar">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ScrollBar">
-                        <Grid>
-                            <Track Name="PART_Track"
-                                   Value="{TemplateBinding Value}"
-                                   Maximum="{TemplateBinding Maximum}"
-                                   Minimum="{TemplateBinding Minimum}"
-                                   ViewportSize="{TemplateBinding ViewportSize}">
-                                <Track.DecreaseRepeatButton>
-                                    <RepeatButton Visibility="Collapsed" />
-                                </Track.DecreaseRepeatButton>
-                                <!-- 움직이는 작은 바 (Thumb) -->
-                                <Track.Thumb>
-                                    <Thumb Background="White" BorderBrush="Gray" BorderThickness="1" />
-                                </Track.Thumb>
-                                <Track.IncreaseRepeatButton>
-                                    <RepeatButton Visibility="Collapsed" />
-                                </Track.IncreaseRepeatButton>
-                            </Track>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <!-- 점멸 애니메이션 -->
+        <Storyboard x:Key="FlashStoryboard" RepeatBehavior="Forever" AutoReverse="True">
+            <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                            From="#2D2D2D" To="Red" Duration="0:0:2" />
+        </Storyboard>
     </UserControl.Resources>
 
     <Grid>
@@ -54,41 +32,54 @@
                           HorizontalContentAlignment="Stretch">
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#2D2D2D" CornerRadius="5" Padding="5" Margin="5">
-                                <Grid Height="auto" Width="auto">
-                                    <!-- Column 정의 -->
+                            <Border Background="#2D2D2D" CornerRadius="5" Padding="10" Margin="5">
+                                <Border.Triggers>
+                                    <!-- 알람 로드 시 점멸 애니메이션 실행 -->
+                                    <EventTrigger RoutedEvent="Loaded">
+                                        <BeginStoryboard Storyboard="{StaticResource FlashStoryboard}" />
+                                    </EventTrigger>
+                                </Border.Triggers>
+
+                                <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto" />
-                                        <!-- 메시지 -->
-                                        <ColumnDefinition Width="*" />
-                                        <!-- 공백 -->
-                                        <ColumnDefinition Width="auto" />
-                                        <!-- 상세 버튼 -->
-                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="700" />
+                                        <!-- 메시지와 값 -->
+                                        <ColumnDefinition Width="3*" />
+                                        <ColumnDefinition Width="2*" />
+                                        <!-- 타임스탬프 -->
+                                        <ColumnDefinition Width="2*" />
+                                        <!-- 알람 코드 -->
+                                        <ColumnDefinition Width="2*" />
                                         <!-- 삭제 버튼 -->
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- 알람 메시지와 타임스탬프 -->
-                                    <StackPanel Orientation="Vertical" Grid.Column="0" Margin="5">
-                                        <TextBlock Text="{Binding Message}" VerticalAlignment="Center" Foreground="White" FontSize="16" />
-                                        <TextBlock Text="{Binding Timestamp}" VerticalAlignment="Center" Foreground="Orange" FontSize="12" />
+                                    <!-- 메시지와 값 -->
+                                    <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center" Margin="10,0,10,0">
+                                        <TextBlock Text="{Binding Message}" FontSize="16" Foreground="White" />
+                                        <TextBlock Text=": " FontSize="16" Foreground="White" />
+                                        <TextBlock Text="{Binding Value}" FontSize="16" Foreground="White" />
                                     </StackPanel>
 
-                                    <!-- 공백을 위한 Border -->
-                                    <Border Grid.Column="1" Background="Transparent" />
-                                    <!-- 디버깅용 배경 -->
+                                    <!-- 타임스탬프 (세로로 표시) -->
+                                    <StackPanel Orientation="Vertical" Grid.Column="2" Margin="20,5,20,5">
+                                        <TextBlock Text="Timestamp:" FontSize="14" Foreground="White" />
+                                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" 
+                                                   FontSize="16" Foreground="Orange" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1"></TextBlock>
 
-                                    <!-- 상세 버튼 -->
-                                    <!--<Button Content="상세"
-                                            Command="{Binding DataContext.SendDetailsCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
-                                            CommandParameter="{Binding}"
-                                            Margin="5" Grid.Column="2" Width="60" Height="30" />-->
+                                    <!-- 알람 코드 -->
+                                    <StackPanel Orientation="Vertical" Grid.Column="3" Margin="20,5,20,5">
+                                        <TextBlock Text="Code:" FontSize="14" Foreground="White" />
+                                        <TextBlock Text="{Binding AlarmCode}" 
+                                                   FontSize="16" Foreground="Orange" />
+                                    </StackPanel>
 
                                     <!-- 삭제 버튼 -->
                                     <Button Content="삭제"
                                             Command="{Binding DataContext.DeleteAlarmCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
                                             CommandParameter="{Binding}"
-                                            Margin="5" Grid.Column="3" Width="60" Height="30" 
+                                            Grid.Column="4" Width="90" Height="40" 
                                             Background="#FF3B30" Foreground="White" BorderBrush="#FF3B30" />
                                 </Grid>
                             </Border>

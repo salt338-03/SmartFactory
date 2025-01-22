@@ -6,6 +6,20 @@
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:local="clr-namespace:PrismDatabaseApp"  
              Background="#1A1A1A">
+    <UserControl.Resources>
+        <Style x:Key="RW_WrappedColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock TextWrapping="Wrap" Text="{Binding}" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <!--<Setter Property="Background" Value="red"/>-->
+            <!-- 헤더 배경색을 원할 경우 활성화 -->
+        </Style>
+    </UserControl.Resources>
     <Grid Margin="20" mc:Ignorable="d" Cursor="">
         <Grid.RowDefinitions>
             <!-- 상단 제목 및 진행률 -->
@@ -51,25 +65,47 @@
             </ListView.Resources>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="ID" Width="100">
+                    <!-- ID Column -->
+                    <GridViewColumn Header="ID" Width="200" >
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Id}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Id}" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center" />
+                                </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Message}" Width="500"/>
-                    <GridViewColumn Header="Time" Width="200">
+                    <!-- Message Column -->
+                    <GridViewColumn Header="Message" Width="700">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss}'}" />
+                                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Message}" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" />
+                                </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
+                    <!-- Time Column -->
+                    <GridViewColumn Header="Time" Width="400">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss}'}" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>
+
     </Grid>
 </UserControl>

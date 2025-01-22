@@ -13,7 +13,7 @@ namespace PrismDatabaseApp.ViewModels
     {
         private int slurryTankFlag = 3;
         private DateTime lastAlarmTimestamp = DateTime.MinValue; // 마지막 알람 발생 시간 초기화
-        private readonly TimeSpan alarmInterval = TimeSpan.FromSeconds(300); // 알람 간격 설정 (예: 5초)
+        private readonly TimeSpan alarmInterval = TimeSpan.FromSeconds(3); // 알람 간격 설정 (예: 5초)
 
         private readonly ITcpSocketService _tcpSocketService;
         private readonly AlarmService _alarmService;
@@ -60,6 +60,8 @@ namespace PrismDatabaseApp.ViewModels
                     var slurryData = jsonData["SlurryTank"];
                     var remainingVolume = slurryData["RemainingVolume"]?.Value<double>() ?? 0;
                     var timestampString = slurryData["Timestamp"]?.ToString();
+                    var temperature = slurryData["Temperature"]?.Value<double>() ?? 0;
+                    var supplySpeed = slurryData["SupplySpeed"]?.Value<double>() ?? 0;
 
                     DateTime timestamp;
                     if (!DateTime.TryParse(timestampString, out timestamp))
@@ -67,7 +69,7 @@ namespace PrismDatabaseApp.ViewModels
                         timestamp = DateTime.Now; // 변환 실패 시 현재 시간을 사용
                     }
 
-                    if (remainingVolume < 99) // 잔여량이 99L 이하
+                    if (remainingVolume <= 99) 
                     {
                         if ( DateTime.Now - lastAlarmTimestamp > alarmInterval) // 시간 제한 확인
                         {
@@ -76,7 +78,9 @@ namespace PrismDatabaseApp.ViewModels
 
                             var newAlarm = new Alarm
                             {
-                                Message = $"잔여량이 임계치 미만입니다. 현재 잔여량 - {remainingVolume}L",
+                                Message = $"슬러리 탱크의 잔여량이 임계치 미만입니다. 현재 잔여량 ",
+                                AlarmCode = "A001",
+                                Value = remainingVolume,
                                 Timestamp = timestamp
                             };
 
@@ -86,9 +90,47 @@ namespace PrismDatabaseApp.ViewModels
                             await SaveAlarmToDatabaseAsync(newAlarm);
                         }
                     }
-                    else // 잔여량이 99L 이상으로 회복
+                    if (temperature >= 25) // 
                     {
-                        //slurryTankFlag = 3; // 플래그 초기화
+                        if (DateTime.Now - lastAlarmTimestamp > alarmInterval) // 시간 제한 확인
+                        {
+                            //slurryTankFlag--; // 플래그 감소
+                            lastAlarmTimestamp = DateTime.Now; // 마지막 알람 시간 갱신
+
+                            var newAlarm = new Alarm
+                            {
+                                Message = $"슬러리 온도가 임계치 이상입니다. 현재 온도",
+                                AlarmCode = "A002",
+                                Value= temperature,
+                                Timestamp = timestamp
+                            };
+
+                            App.Current.Dispatcher.Invoke(() => Alarms.Add(newAlarm));
+
+                            // 데이터베이스 저장
+                            await SaveAlarmToDatabaseAsync(newAlarm);
+                        }
+                    }
+                    if (temperature <= 22) // 
+                    {
+                        if (DateTime.Now - lastAlarmTimestamp > alarmInterval) // 시간 제한 확인
+                        {
+                            //slurryTankFlag--; // 플래그 감소
+                            lastAlarmTimestamp = DateTime.Now; // 마지막 알람 시간 갱신
+
+                            var newAlarm = new Alarm
+                            {
+                                Message = $"슬러리 온도가 임계치 이하입니다. 현재 온도",
+                                AlarmCode = "A002",
+                                Value = temperature,
+                                Timestamp = timestamp
+                            };
+
+                            App.Current.Dispatcher.Invoke(() => Alarms.Add(newAlarm));
+
+                            // 데이터베이스 저장
+                            await SaveAlarmToDatabaseAsync(newAlarm);
+                        }
                     }
                 }
             }
