@@ -111,7 +111,7 @@ namespace PrismDatabaseApp.ViewModels
                             await SaveAlarmToDatabaseAsync(newAlarm);
                         }
                     }
-                    if (temperature <= 22) // 
+                    if (temperature <= 23) // 
                     {
                         if (DateTime.Now - lastAlarmTimestamp > alarmInterval) // 시간 제한 확인
                         {

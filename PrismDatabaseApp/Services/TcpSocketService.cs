@@ -1,10 +1,11 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using System;
 using Newtonsoft.Json.Linq;
-using System.Xml.Linq;
 
 public interface ITcpSocketService
 {
@@ -13,7 +14,8 @@ public interface ITcpSocketService
     event Action<string> CoatingProcessDataReceived;
     event Action<string> DryingProcessDataReceived;
 
-
+    void Configure(string ip, int port);
+    void StartListening();
     void StopListening();
 }
 
@@ -23,6 +25,7 @@ public class TcpSocketService : ITcpSocketService
     private bool _isRunning;
     private string _ip;
     private int _port;
+    private string _dataBuffer = string.Empty; // Buffer to handle partial or multiple JSON data
 
     public event Action<string> DataReceived;
     public event Action<string> SlurrySupplyDataReceived;
@@ -37,7 +40,6 @@ public class TcpSocketService : ITcpSocketService
 
     public void StartListening()
     {
-
         if (string.IsNullOrEmpty(_ip) || _port == 0)
             throw new InvalidOperationException("IP and Port must be configured before starting the service.");
 
@@ -73,44 +75,69 @@ public class TcpSocketService : ITcpSocketService
     {
         try
         {
-            //Console.WriteLine("Client connected: {0}", client.Client.RemoteEndPoint);
+            Console.WriteLine($"Client connected: {client.Client.RemoteEndPoint}");
             var stream = client.GetStream();
-            var buffer = new byte[1024];
+            var buffer = new byte[4096]; // 데이터 읽기 버퍼
+            var dataBuffer = new List<byte>(); // 수신된 데이터를 저장할 버퍼
 
             while (_isRunning && client.Connected)
             {
                 var byteCount = await stream.ReadAsync(buffer, 0, buffer.Length);
                 if (byteCount == 0) break;
 
-                var data = Encoding.UTF8.GetString(buffer, 0, byteCount);
-                //Console.WriteLine($"Raw data received: {data}");
+                // 수신된 데이터를 dataBuffer에 추가
+                dataBuffer.AddRange(buffer.Take(byteCount));
 
-                // JSON 데이터 파싱
-                JObject jsonData = JObject.Parse(data);
-                
-                // SlurryTank 키 확인 후 이벤트 호출
-                if (jsonData.ContainsKey("SlurryTank"))
+                // 길이 정보 처리
+                while (dataBuffer.Count >= 4) // 최소 4바이트(길이 정보)가 있어야 처리 가능
                 {
-                    SlurrySupplyDataReceived?.Invoke(data);
-                }
+                    var lengthBytes = dataBuffer.Take(4).ToArray();
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        Array.Reverse(lengthBytes);
+                    }
 
-                // CoatingProcess 키 확인 후 이벤트 호출
-                if (jsonData.ContainsKey("CoatingProcess"))
-                {
-                    CoatingProcessDataReceived?.Invoke(data);
-                }
+                    int messageLength = BitConverter.ToInt32(lengthBytes, 0);
+                    if (dataBuffer.Count - 4 < messageLength)
+                    {
+                        // 메시지 데이터가 완전히 수신되지 않음
+                        break;
+                    }
 
-                // DryingProcess 키 확인 후 이벤트 호출
-                if (jsonData.ContainsKey("DryingProcess"))
-                {
-                    DryingProcessDataReceived?.Invoke(data);
+                    // 완전한 메시지 추출
+                    var jsonDataBytes = dataBuffer.Skip(4).Take(messageLength).ToArray();
+                    var jsonString = Encoding.UTF8.GetString(jsonDataBytes);
+
+                    // 처리된 데이터 제거
+                    dataBuffer.RemoveRange(0, 4 + messageLength);
+
+                    try
+                    {
+                        // JSON 데이터 파싱
+                        var jsonData = JObject.Parse(jsonString);
+
+                        // 이벤트 트리거
+                        if (jsonData.ContainsKey("SlurryTank"))
+                            SlurrySupplyDataReceived?.Invoke(jsonString);
+
+                        if (jsonData.ContainsKey("CoatingProcess"))
+                            CoatingProcessDataReceived?.Invoke(jsonString);
+
+                        if (jsonData.ContainsKey("DryingProcess"))
+                            DryingProcessDataReceived?.Invoke(jsonString);
+
+                        DataReceived?.Invoke(jsonString);
+                    }
+                    catch (Exception parseEx)
+                    {
+                        Console.WriteLine($"JSON Parsing error: {parseEx.Message}");
+                    }
                 }
-                DataReceived?.Invoke(data);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Client error: {ex.Message}");
+            Console.WriteLine($"Client handling error: {ex.Message}");
         }
         finally
         {
