@@ -66,7 +66,7 @@
             <ListView.View>
                 <GridView>
                     <!-- ID Column -->
-                    <GridViewColumn Header="ID" Width="200" >
+                    <GridViewColumn Header="ID" Width="100" >
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -79,7 +79,7 @@
                     </GridViewColumn>
 
                     <!-- Message Column -->
-                    <GridViewColumn Header="Message" Width="700">
+                    <GridViewColumn Header="Message" Width="500">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -90,15 +90,37 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+                    <GridViewColumn Header="AlarmCode" Width="200">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding AlarmCode}" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
 
                     <!-- Time Column -->
-                    <GridViewColumn Header="Time" Width="400">
+                    <GridViewColumn Header="Value" Width="300">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Value}" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Time" Width="200">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss}'}" 
-                                       HorizontalAlignment="Center" 
-                                       VerticalAlignment="Center" />
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center" />
                                 </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>

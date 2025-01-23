@@ -3,38 +3,46 @@ using PrismDatabaseApp.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace PrismDatabaseApp.Services
 {
     public class AlarmService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _dbContextFactory;
 
-        public AlarmService(AppDbContext context)
+        public AlarmService(IDbContextFactory<AppDbContext> dbContextFactory)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _dbContextFactory = dbContextFactory ?? throw new ArgumentNullException(nameof(dbContextFactory));
         }
 
         /// <summary>
         /// 알람 저장
         /// </summary>
-        public void SaveAlarm(Alarm alarm)
+        public async Task SaveAlarm(Alarm alarm)
         {
             if (alarm == null) throw new ArgumentNullException(nameof(alarm));
 
-            _context.Alarms.Add(alarm);
-            _context.SaveChanges();
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                context.Alarms.Add(alarm);
+                await context.SaveChangesAsync();
+            }
         }
 
         /// <summary>
         /// 알람 조회 (최신순)
         /// </summary>
-        public List<Alarm> GetRecentAlarms(int count)
+        public async Task<List<Alarm>> GetRecentAlarmsAsync(int count)
         {
-            return _context.Alarms
-                           .OrderByDescending(a => a.Id)
-                           .Take(count)
-                           .ToList();
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                return await context.Alarms
+                                   .OrderByDescending(a => a.Id)
+                                   .Take(count)
+                                   .ToListAsync();
+            }
         }
     }
 }

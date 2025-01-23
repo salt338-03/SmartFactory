@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PrismDatabaseApp.Services
 {
@@ -13,17 +14,17 @@ namespace PrismDatabaseApp.Services
     /// </summary>
     public class NotificationInquiryService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _dbContextFactory;
 
-        public NotificationInquiryService(AppDbContext context)
+        public NotificationInquiryService(IDbContextFactory<AppDbContext> dbContextFactory)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context), "AppDbContext cannot be null.");
+            _dbContextFactory = dbContextFactory ?? throw new ArgumentNullException(nameof(dbContextFactory), "DbContextFactory cannot be null.");
         }
 
         /// <summary>
         /// 날짜 범위와 배치번호에 따라 필터링된 데이터를 반환합니다.
         /// </summary>
-        public List<Alarm> GetProductsByDateRangeAndBatch(DateTime startDate, DateTime endDate)
+        public async Task<List<Alarm>> GetProductsByDateRangeAndBatch(DateTime startDate, DateTime endDate)
         {
             // SQL 쿼리 생성
             StringBuilder query = new StringBuilder();
@@ -31,16 +32,18 @@ namespace PrismDatabaseApp.Services
             query.Append("FROM [SlurryCoatingDB].[dbo].[Alarms] ");
             query.Append("WHERE CAST([Timestamp] AS DATE) BETWEEN @StartDate AND @EndDate ");
 
-
-            // 쿼리 실행
-            return _context.NotificationInquiry
-                           .FromSqlRaw(query.ToString(), new object[]
-                           {
-                               new Microsoft.Data.SqlClient.SqlParameter("@StartDate", startDate.Date),
-                               new Microsoft.Data.SqlClient.SqlParameter("@EndDate", endDate.Date),
-                           })
-                           .AsNoTracking()
-                           .ToList();
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                // 비동기로 쿼리 실행
+                return await context.NotificationInquiry
+                                     .FromSqlRaw(query.ToString(), new object[]
+                                     {
+                                         new Microsoft.Data.SqlClient.SqlParameter("@StartDate", startDate.Date),
+                                         new Microsoft.Data.SqlClient.SqlParameter("@EndDate", endDate.Date),
+                                     })
+                                     .AsNoTracking()
+                                     .ToListAsync();
+            }
         }
     }
 }

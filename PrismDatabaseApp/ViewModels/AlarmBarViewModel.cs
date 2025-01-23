@@ -12,8 +12,18 @@ namespace PrismDatabaseApp.ViewModels
     public class AlarmBarViewModel : BindableBase
     {
         private int slurryTankFlag = 3;
-        private DateTime lastAlarmTimestamp = DateTime.MinValue; // 마지막 알람 발생 시간 초기화
-        private readonly TimeSpan alarmInterval = TimeSpan.FromSeconds(3); // 알람 간격 설정 (예: 5초)
+                                                                 // 각 알람 조건별로 타임스탬프 추가
+        private DateTime lastAlarmTimestamp1 = DateTime.MinValue;
+        private DateTime lastAlarmTimestamp2 = DateTime.MinValue;
+        private DateTime lastAlarmTimestamp3 = DateTime.MinValue;
+        private DateTime lastAlarmTimestamp4 = DateTime.MinValue;
+
+        private readonly TimeSpan alarmInterval1 = TimeSpan.FromSeconds(180); // 알람 간격 설정 (예: 5초)
+        private readonly TimeSpan alarmInterval2 = TimeSpan.FromSeconds(180); // 알람 간격 설정 (예: 5초)
+        private readonly TimeSpan alarmInterval3 = TimeSpan.FromSeconds(180); // 알람 간격 설정 (예: 5초)
+        private readonly TimeSpan alarmInterval4= TimeSpan.FromSeconds(180); // 알람 간격 설정 (예: 5초)
+        private readonly TimeSpan alarmInterval5 = TimeSpan.FromSeconds(180); // 알람 간격 설정 (예: 5초)
+
 
         private readonly ITcpSocketService _tcpSocketService;
         private readonly AlarmService _alarmService;
@@ -63,22 +73,24 @@ namespace PrismDatabaseApp.ViewModels
                     var temperature = slurryData["Temperature"]?.Value<double>() ?? 0;
                     var supplySpeed = slurryData["SupplySpeed"]?.Value<double>() ?? 0;
 
+                   
+
                     DateTime timestamp;
                     if (!DateTime.TryParse(timestampString, out timestamp))
                     {
                         timestamp = DateTime.Now; // 변환 실패 시 현재 시간을 사용
                     }
 
-                    if (remainingVolume <= 99) 
+                    if (remainingVolume <= 30)
                     {
-                        if ( DateTime.Now - lastAlarmTimestamp > alarmInterval) // 시간 제한 확인
+                        if (DateTime.Now - lastAlarmTimestamp1 > alarmInterval1) // 시간 제한 확인
                         {
                             //slurryTankFlag--; // 플래그 감소
-                            lastAlarmTimestamp = DateTime.Now; // 마지막 알람 시간 갱신
+                            lastAlarmTimestamp1 = DateTime.Now; // 마지막 알람 시간 갱신
 
                             var newAlarm = new Alarm
                             {
-                                Message = $"슬러리 탱크의 잔여량이 임계치 미만입니다. 현재 잔여량 ",
+                                Message = $"슬러리 탱크의 잔여량이 임계치 미만입니다.",
                                 AlarmCode = "A001",
                                 Value = remainingVolume,
                                 Timestamp = timestamp
@@ -90,18 +102,18 @@ namespace PrismDatabaseApp.ViewModels
                             await SaveAlarmToDatabaseAsync(newAlarm);
                         }
                     }
-                    if (temperature >= 25) // 
+                    if (temperature >= 29) // 
                     {
-                        if (DateTime.Now - lastAlarmTimestamp > alarmInterval) // 시간 제한 확인
+                        if (DateTime.Now - lastAlarmTimestamp2 > alarmInterval2) // 시간 제한 확인
                         {
                             //slurryTankFlag--; // 플래그 감소
-                            lastAlarmTimestamp = DateTime.Now; // 마지막 알람 시간 갱신
+                            lastAlarmTimestamp2 = DateTime.Now; // 마지막 알람 시간 갱신
 
                             var newAlarm = new Alarm
                             {
-                                Message = $"슬러리 온도가 임계치 이상입니다. 현재 온도",
+                                Message = $"슬러리 온도가 임계치 이상입니다.",
                                 AlarmCode = "A002",
-                                Value= temperature,
+                                Value = temperature,
                                 Timestamp = timestamp
                             };
 
@@ -111,18 +123,50 @@ namespace PrismDatabaseApp.ViewModels
                             await SaveAlarmToDatabaseAsync(newAlarm);
                         }
                     }
-                    if (temperature <= 23) // 
+                    if (temperature <= 21) // 
                     {
-                        if (DateTime.Now - lastAlarmTimestamp > alarmInterval) // 시간 제한 확인
+                        if (DateTime.Now - lastAlarmTimestamp3 > alarmInterval3) // 시간 제한 확인
                         {
                             //slurryTankFlag--; // 플래그 감소
-                            lastAlarmTimestamp = DateTime.Now; // 마지막 알람 시간 갱신
+                            lastAlarmTimestamp3 = DateTime.Now; // 마지막 알람 시간 갱신
 
                             var newAlarm = new Alarm
                             {
-                                Message = $"슬러리 온도가 임계치 이하입니다. 현재 온도",
+                                Message = $"슬러리 온도가 임계치 이하입니다.",
                                 AlarmCode = "A002",
                                 Value = temperature,
+                                Timestamp = timestamp
+                            };
+
+                            App.Current.Dispatcher.Invoke(() => Alarms.Add(newAlarm));
+
+                            // 데이터베이스 저장
+                            await SaveAlarmToDatabaseAsync(newAlarm);
+                        }
+                    }
+                }
+                if (jsonData.ContainsKey("CoatingProcess"))
+                {
+                    var CoatingData = jsonData["CoatingProcess"];
+                    var CoatingThickness = CoatingData["Thickness"]?.Value<double>() ?? 0;
+                    var timestampString = CoatingData["Timestamp"]?.ToString();
+                    DateTime timestamp;
+                    if (!DateTime.TryParse(timestampString, out timestamp))
+                    {
+                        timestamp = DateTime.Now; // 변환 실패 시 현재 시간을 사용
+                    }
+                    if (CoatingThickness >= 8) // 
+                    {
+                        if (DateTime.Now - lastAlarmTimestamp4 > alarmInterval4) // 시간 제한 확인
+                        {
+                            //slurryTankFlag--; // 플래그 감소
+                            lastAlarmTimestamp4 = DateTime.Now; // 마지막 알람 시간 갱신
+
+                            var newAlarm = new Alarm
+                            {
+                                Message = $"코팅 두께가 임계치 이상입니다.",
+                                AlarmCode = "B001",
+                                Value = CoatingThickness,
                                 Timestamp = timestamp
                             };
 

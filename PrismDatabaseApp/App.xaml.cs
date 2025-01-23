@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using PrismDatabaseApp.Data;
 using PrismDatabaseApp.Services;
 using System.Net;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace PrismDatabaseApp
 {
@@ -36,21 +37,22 @@ namespace PrismDatabaseApp
             tcpSocketService.Configure("IPAddress.Any", 8080); // IP와 포트 설정
             tcpSocketService.StartListening(); // 서비스 시작
             containerRegistry.RegisterInstance<ITcpSocketService>(tcpSocketService);
-            
+
             Console.WriteLine($"TcpSocketService instance: {tcpSocketService.GetHashCode()}");
-            //string sql = "Server=SUNJIN-NOTEBOOK\\MSSQLSERVERR;Database=SlurryCoatingDB;Trusted_Connection=True;TrustServerCertificate=True;";
             string sql = "Server=192.168.1.151,1433;Database=SlurryCoatingDB;User Id=1234;Password=1234;TrustServerCertificate=True;";
 
-            containerRegistry.RegisterSingleton<AppDbContext>(() =>
+            // DbContextFactory 등록
+            containerRegistry.Register<IDbContextFactory<AppDbContext>>(() =>
             {
                 var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
                 optionsBuilder.UseSqlServer(sql);
-                return new AppDbContext(optionsBuilder.Options);
+                return new PooledDbContextFactory<AppDbContext>(optionsBuilder.Options);
             });
 
             // 서비스 등록
-            containerRegistry.RegisterSingleton<AlarmService>();
+            containerRegistry.Register<AlarmService>();
         }
+
 
         protected override void OnInitialized()
         {
