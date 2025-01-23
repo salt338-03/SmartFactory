@@ -39,7 +39,8 @@ namespace PrismDatabaseApp
             containerRegistry.RegisterInstance<ITcpSocketService>(tcpSocketService);
 
             Console.WriteLine($"TcpSocketService instance: {tcpSocketService.GetHashCode()}");
-            string sql = "Server=192.168.1.151,1433;Database=SlurryCoatingDB;User Id=1234;Password=1234;TrustServerCertificate=True;";
+           // string sql = "Server=192.168.1.151,1433;Database=SlurryCoatingDB;User Id=1234;Password=1234;TrustServerCertificate=True;";
+             string sql = "Server=SUNJIN-NOTEBOOK\\MSSQLSERVERR;Database=SlurryCoatingDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
             // DbContextFactory 등록
             containerRegistry.Register<IDbContextFactory<AppDbContext>>(() =>

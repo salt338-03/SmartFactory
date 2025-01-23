@@ -34,15 +34,15 @@ namespace PrismDatabaseApp.Services
         /// <summary>
         /// 알람 조회 (최신순)
         /// </summary>
-        public async Task<List<Alarm>> GetRecentAlarmsAsync(int count)
-        {
-            using (var context = _dbContextFactory.CreateDbContext())
-            {
-                return await context.Alarms
-                                   .OrderByDescending(a => a.Id)
-                                   .Take(count)
-                                   .ToListAsync();
-            }
-        }
+        //public async Task<List<Alarm>> GetRecentAlarmsAsync(int count)
+        //{
+        //    using (var context = _dbContextFactory.CreateDbContext())
+        //    {
+        //        return await context.Alarms
+        //                           .OrderByDescending(a => a.Id)
+        //                           .Take(count)
+        //                           .ToListAsync();
+        //    }
+        //}
     }
 }

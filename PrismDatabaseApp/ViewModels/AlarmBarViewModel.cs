@@ -22,7 +22,6 @@ namespace PrismDatabaseApp.ViewModels
         private readonly TimeSpan alarmInterval2 = TimeSpan.FromSeconds(180); // 알람 간격 설정 (예: 5초)
         private readonly TimeSpan alarmInterval3 = TimeSpan.FromSeconds(180); // 알람 간격 설정 (예: 5초)
         private readonly TimeSpan alarmInterval4= TimeSpan.FromSeconds(180); // 알람 간격 설정 (예: 5초)
-        private readonly TimeSpan alarmInterval5 = TimeSpan.FromSeconds(180); // 알람 간격 설정 (예: 5초)
 
 
         private readonly ITcpSocketService _tcpSocketService;
@@ -81,7 +80,7 @@ namespace PrismDatabaseApp.ViewModels
                         timestamp = DateTime.Now; // 변환 실패 시 현재 시간을 사용
                     }
 
-                    if (remainingVolume <= 30)
+                    if (remainingVolume <= 50)
                     {
                         if (DateTime.Now - lastAlarmTimestamp1 > alarmInterval1) // 시간 제한 확인
                         {

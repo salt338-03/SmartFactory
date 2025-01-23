@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace PrismDatabaseApp.Services
 {
     /// <summary>
-    /// 데이터베이스 조회를 위한 서비스 클래스
+    ///     
     /// </summary>
     public class NotificationInquiryService
     {
@@ -36,13 +36,13 @@ namespace PrismDatabaseApp.Services
             {
                 // 비동기로 쿼리 실행
                 return await context.NotificationInquiry
-                                     .FromSqlRaw(query.ToString(), new object[]
-                                     {
-                                         new Microsoft.Data.SqlClient.SqlParameter("@StartDate", startDate.Date),
-                                         new Microsoft.Data.SqlClient.SqlParameter("@EndDate", endDate.Date),
-                                     })
-                                     .AsNoTracking()
-                                     .ToListAsync();
+                .FromSqlRaw(query.ToString(), new object[]
+                {
+                    new Microsoft.Data.SqlClient.SqlParameter("@StartDate", startDate.Date),
+                    new Microsoft.Data.SqlClient.SqlParameter("@EndDate", endDate.Date),
+                })
+                .AsNoTracking()
+                .ToListAsync();
             }
         }
     }
